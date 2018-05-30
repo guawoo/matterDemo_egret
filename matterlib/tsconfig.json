@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+        "target": "es5",
+        "outFile": "bin/matter.js",
+        "allowJs": true
+    },
+    "files": [
+    	"src/decomp.js",
+        "src/matter.js"
+        
+    ]
+}

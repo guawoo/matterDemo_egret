@@ -1,0 +1,5 @@
+{
+	"name": "box2dlib",
+	"typings": "src/matter.d.ts",
+	"dependencies": {}
+}
