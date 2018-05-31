@@ -21,6 +21,7 @@ egret是typscript一路直到底，没有d.ts文件，很多js库都用不了。
     
 > dts-gen -m matter-js
 
+这里在你的运行目录下就会生成d.ts文件，这里的d.ts文件还要修改一下，因为它是把所有函数和模块直接导出的，所以需要自己在它的最外层加一个matter的namesapce，具体可以参看demo项目的d.ts文件。
 
 ###2.生成egret第三方库
 
@@ -66,3 +67,23 @@ tsconfig.json
 ```
 注意tscofig.json里files字段下的文件顺序，因为matter.js要用到decomp.js，所以decomp.js一定要放在matter.js前面。
 
+然后退回到上级目录，编译matterlib。
+> egret build matterlib
+
+这时 matterlib/bin文件夹下就会生成egret第三方库所需要的文件。
+
+
+###3.将matterlib引入项目， 保证你的目录结构是这样的
+![](/doc/QQ截图20180531114048.png)
+
+打开你的项目，编辑egretProperties.json，添加以下类容
+```
+ {
+      "name": "Matter",
+      "path": "../matterlib"
+    }
+```
+注意"name"后字段的大小写，比如你在d.ts文件里导出的namcespace是Matter,那么就是写Matter， 如果导出的是matter，那么这里就写matter。
+
+###结束
+现在就可以在工程里使用matter.js了，
