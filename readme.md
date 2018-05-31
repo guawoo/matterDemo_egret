@@ -29,6 +29,7 @@ egret是typscript一路直到底，没有d.ts文件，很多js库都用不了。
     egret create_lib matterlib
 
 然后打开matterlib文件夹，保证目录结构是这样的
+
 ![](/doc/QQ截图20180531114048.png)
 
 把matter.js , matter.d.ts , decomp.js三个文件放入src文件夹里，如果有些文件夹没有，自己创建好就行了。
@@ -41,15 +42,15 @@ decmop.js文件下载地址是
 
 
 package.json
-> 
+```
 {
 	"name": "matterlib",
 	"typings": "src/matter.d.ts",
 	"dependencies": {}
 }
-
+```
 tsconfig.json
->
+```
 {
 	"compilerOptions": {
         "target": "es5",
@@ -62,3 +63,6 @@ tsconfig.json
         
     ]
 }
+```
+注意tscofig.json里files字段下的文件顺序，因为matter.js要用到decomp.js，所以decomp.js一定要放在matter.js前面。
+
