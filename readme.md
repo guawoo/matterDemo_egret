@@ -74,7 +74,8 @@ tsconfig.json
 
 
 ###3.将matterlib引入项目， 保证你的目录结构是这样的
-![](/doc/QQ截图20180531114048.png)
+
+![](/doc/QQ截图20180531123327.png)
 
 打开你的项目，编辑egretProperties.json，添加以下类容
 ```
