@@ -75,6 +75,7 @@ var Main = (function (_super) {
     __extends(Main, _super);
     function Main() {
         var _this = _super.call(this) || this;
+        _this.index = 0;
         _this.addEventListener(egret.Event.ADDED_TO_STAGE, _this.onAddToStage, _this);
         return _this;
     }
@@ -106,7 +107,6 @@ var Main = (function (_super) {
                         return [4 /*yield*/, RES.getResAsync("description_json")];
                     case 2:
                         result = _a.sent();
-                        this.startAnimation(result);
                         return [4 /*yield*/, platform.login()];
                     case 3:
                         _a.sent();
@@ -150,49 +150,96 @@ var Main = (function (_super) {
      * Create a game scene
      */
     Main.prototype.createGameScene = function () {
-        var sky = this.createBitmapByName("bg_jpg");
-        this.addChild(sky);
-        var stageW = this.stage.stageWidth;
-        var stageH = this.stage.stageHeight;
-        sky.width = stageW;
-        sky.height = stageH;
-        var topMask = new egret.Shape();
-        topMask.graphics.beginFill(0x000000, 0.5);
-        topMask.graphics.drawRect(0, 0, stageW, 172);
-        topMask.graphics.endFill();
-        topMask.y = 33;
-        this.addChild(topMask);
-        var icon = this.createBitmapByName("egret_icon_png");
-        this.addChild(icon);
-        icon.x = 26;
-        icon.y = 33;
-        var line = new egret.Shape();
-        line.graphics.lineStyle(2, 0xffffff);
-        line.graphics.moveTo(0, 0);
-        line.graphics.lineTo(0, 117);
-        line.graphics.endFill();
-        line.x = 172;
-        line.y = 61;
-        this.addChild(line);
-        var colorLabel = new egret.TextField();
-        colorLabel.textColor = 0xffffff;
-        colorLabel.width = stageW - 172;
-        colorLabel.textAlign = "center";
-        colorLabel.text = "Hello Egret";
-        colorLabel.size = 24;
-        colorLabel.x = 172;
-        colorLabel.y = 80;
-        this.addChild(colorLabel);
-        var textfield = new egret.TextField();
-        this.addChild(textfield);
-        textfield.alpha = 0;
-        textfield.width = stageW - 172;
-        textfield.textAlign = egret.HorizontalAlign.CENTER;
-        textfield.size = 24;
-        textfield.textColor = 0xffffff;
-        textfield.x = 172;
-        textfield.y = 135;
-        this.textfield = textfield;
+        var _this = this;
+        //创建engine
+        var engine = Matter.Engine.create(null, null);
+        //创建runner
+        var runner = Matter.Runner.create(null);
+        //设置runner以固定帧率计算
+        runner.isFixed = true;
+        //创建render
+        var render = EgretRender.create({
+            element: document.body,
+            engine: engine,
+            options: {
+                width: this.stage.width,
+                height: this.stage.height,
+                container: this,
+                wireframes: true
+            }
+        });
+        Matter.Runner.run(runner, engine);
+        EgretRender.run(render);
+        //添加墙壁
+        Matter.World.add(engine.world, [
+            Matter.Bodies.rectangle(400, 0, 800, 50, { isStatic: true, friction: 0 }),
+            Matter.Bodies.rectangle(400, 600, 800, 50, { isStatic: true, friction: 0 }),
+            Matter.Bodies.rectangle(650, 300, 50, 600, { isStatic: true, friction: 0 }),
+            Matter.Bodies.rectangle(0, 300, 50, 600, { isStatic: true, friction: 0 })
+        ]);
+        //添加一个盒子
+        Matter.World.add(engine.world, Matter.Bodies.rectangle(100, 100, 50, 50, { angle: Math.PI / 6 }));
+        //添加stage的事件侦听
+        this.stage.addEventListener(egret.TouchEvent.TOUCH_TAP, function (event) {
+            //获得点击坐标
+            var x = event.stageX;
+            var y = event.stageY;
+            if (_this.index == 0) {
+                //创建一个带图片的盒子
+                var box = Matter.Bodies.rectangle(x, y, 52, 52, {
+                    render: {
+                        sprite: {
+                            texture: 'rect_png', xOffset: 52 / 2, yOffset: 52 / 2
+                        }
+                    }
+                });
+                Matter.World.add(engine.world, box);
+            }
+            if (_this.index == 1) {
+                //创建一个带图片的圆
+                var circle = Matter.Bodies.circle(x, y, 40, {
+                    render: {
+                        sprite: {
+                            texture: 'circle_png', xOffset: 40, yOffset: 40
+                        }
+                    }
+                }, null);
+                Matter.World.add(engine.world, circle);
+            }
+            if (_this.index == 2) {
+                //创建一个多边形
+                var arrow = Matter.Vertices.fromPath('40 0 40 20 100 20 100 80 40 80 40 100 0 50', null);
+                var arrowBody = Matter.Bodies.fromVertices(x, y, [arrow], null, true, null, null);
+                Matter.World.add(engine.world, arrowBody);
+            }
+            if (_this.index == 3) {
+                //创建一个带图片的多边形
+                var polys = Matter.Vertices.fromPath('0 0 96 0 96 32 32 32 32 64 0 64', null);
+                console.log(polys);
+                //把polys里的顶点集合转换成[[x,y],[x,y],...]形式
+                var vertices = [];
+                for (var i = 0; i < polys.length; i++) {
+                    var x_1 = polys[i].x;
+                    var y_1 = polys[i].y;
+                    vertices.push([x_1, y_1]);
+                }
+                console.log(vertices);
+                //计算多边形的重心
+                var centroid = PhyscisHelp.getPolygonCentroid(vertices);
+                console.log(centroid);
+                var polyBody = Matter.Bodies.fromVertices(x, y, [polys], {
+                    render: {
+                        sprite: {
+                            texture: '4_png', xOffset: centroid[0], yOffset: centroid[1]
+                        }
+                    }
+                }, true, null, null);
+                Matter.World.add(engine.world, polyBody);
+            }
+            _this.index++;
+            if (_this.index > 3)
+                _this.index = 0;
+        }, this);
     };
     /**
      * 根据name关键字创建一个Bitmap对象。name属性请参考resources/resource.json配置文件的内容。
@@ -203,33 +250,6 @@ var Main = (function (_super) {
         var texture = RES.getRes(name);
         result.texture = texture;
         return result;
-    };
-    /**
-     * 描述文件加载成功，开始播放动画
-     * Description file loading is successful, start to play the animation
-     */
-    Main.prototype.startAnimation = function (result) {
-        var _this = this;
-        var parser = new egret.HtmlTextParser();
-        var textflowArr = result.map(function (text) { return parser.parse(text); });
-        var textfield = this.textfield;
-        var count = -1;
-        var change = function () {
-            count++;
-            if (count >= textflowArr.length) {
-                count = 0;
-            }
-            var textFlow = textflowArr[count];
-            // 切换描述内容
-            // Switch to described content
-            textfield.textFlow = textFlow;
-            var tw = egret.Tween.get(textfield);
-            tw.to({ "alpha": 1 }, 200);
-            tw.wait(2000);
-            tw.to({ "alpha": 0 }, 200);
-            tw.call(change, _this);
-        };
-        change();
     };
     return Main;
 }(egret.DisplayObjectContainer));

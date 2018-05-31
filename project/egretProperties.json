@@ -20,6 +20,10 @@
     },
     {
       "name": "promise"
+    },
+    {
+      "name": "Matter",
+      "path": "../matterlib"
     }
   ]
 }
