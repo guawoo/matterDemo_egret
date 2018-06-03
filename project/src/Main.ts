@@ -100,7 +100,7 @@ class Main extends egret.DisplayObjectContainer {
         //设置runner以固定帧率计算
         runner.isFixed = true; 
 
-        //创建render
+        //创建render，使用egret的渲染方法替代matter自己的pixi渲染方法
         let render = EgretRender.create({
             element: document.body,
             engine: engine,
